@@ -22,8 +22,18 @@ function celebrateSticker(){
 }
 stickerPlay.addEventListener('click',celebrateSticker);
 previewImage.addEventListener('load',()=>{if(preview.open)celebrateSticker()});
-grid.addEventListener('click',e=>{const button=e.target.closest('[data-file]');if(!button)return;const sticker=stickers.find(s=>s.file===button.dataset.file);document.getElementById('preview-image').src=`stickers-2x/${sticker.file}`;document.getElementById('preview-image').alt=sticker.name;document.getElementById('preview-title').textContent=sticker.name;document.getElementById('preview-category').textContent=sticker.category;document.getElementById('preview-dimensions').textContent=`Original: ${sticker.width} × ${sticker.height} · Larger: ${sticker.width*2} × ${sticker.height*2}`;document.getElementById('preview-native').href=`stickers/${sticker.file}`;document.getElementById('preview-large').href=`stickers-2x/${sticker.file}`;stickerPlay.style.setProperty('--sticker-image',`url("stickers-2x/${sticker.file}")`);stickerPlay.setAttribute('aria-label',`Animate ${sticker.name} emoji`);stickerPlay.classList.remove('celebrate');preview.showModal();if(previewImage.complete&&previewImage.naturalWidth)celebrateSticker()});
-document.getElementById('close').addEventListener('click',()=>preview.close());preview.addEventListener('click',e=>{if(e.target!==preview)return;const r=preview.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)preview.close()});
+grid.addEventListener('click',e=>{const button=e.target.closest('[data-file]');if(!button)return;const sticker=stickers.find(s=>s.file===button.dataset.file);document.getElementById('preview-image').src=`stickers-2x/${sticker.file}`;document.getElementById('preview-image').alt=sticker.name;document.getElementById('preview-title').textContent=sticker.name;document.getElementById('preview-category').textContent=sticker.category;document.getElementById('preview-dimensions').textContent=`Original: ${sticker.width} × ${sticker.height} · Larger: ${sticker.width*2} × ${sticker.height*2}`;document.getElementById('preview-native').href=`stickers/${sticker.file}`;document.getElementById('preview-large').href=`stickers-2x/${sticker.file}`;stickerPlay.style.setProperty('--sticker-image',`url("stickers-2x/${sticker.file}")`);stickerPlay.setAttribute('aria-label',`Animate ${sticker.name} emoji`);stickerPlay.classList.remove('celebrate');preview.classList.remove('popup-enter');preview.showModal();void preview.offsetWidth;preview.classList.add('popup-enter');if(previewImage.complete&&previewImage.naturalWidth)celebrateSticker()});
+let closingPreview=false;
+function closePreview(){
+  if(closingPreview||!preview.open)return;
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){preview.close();return}
+  closingPreview=true;
+  preview.classList.remove('popup-enter');
+  preview.classList.add('popup-leave');
+  window.setTimeout(()=>{preview.close();preview.classList.remove('popup-leave');closingPreview=false},170);
+}
+preview.addEventListener('cancel',e=>{e.preventDefault();closePreview()});
+document.getElementById('close').addEventListener('click',closePreview);preview.addEventListener('click',e=>{if(e.target!==preview)return;const r=preview.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closePreview()});
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!preview.open&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName)){e.preventDefault();search.focus()}});
 fetch('assets/downloads.json').then(r=>r.json()).then(d=>{document.getElementById('all-size').textContent=`${Math.round(d.all)} MB`;document.getElementById('original-size').textContent=`Native resolution · ${Math.round(d.original)} MB ZIP`;document.getElementById('2x-size').textContent=`Twice the dimensions · ${Math.round(d['2x'])} MB ZIP`}).catch(()=>{});
 render();
@@ -51,5 +61,17 @@ render();
   }));
   window.addEventListener('storage', event => {
     if (event.key === 'sebi-theme') apply(event.newValue === 'light' ? 'light' : 'dark');
+  });
+})();
+
+(() => {
+  document.querySelectorAll('[data-emoji-play]').forEach(button => {
+    const image = button.querySelector('img');
+    button.style.setProperty('--sticker-image', `url("${image.getAttribute('src')}")`);
+    button.addEventListener('click', () => {
+      button.classList.remove('celebrate');
+      void button.offsetWidth;
+      button.classList.add('celebrate');
+    });
   });
 })();
