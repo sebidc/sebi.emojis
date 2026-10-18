@@ -61,10 +61,10 @@ render();
   buttons.forEach(button => button.addEventListener('click', () => {
     const theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
     apply(theme);
-    try { localStorage.setItem('sebi-theme', theme); } catch { /* Mode still works for this visit. */ }
+    try { localStorage.setItem('sebi-theme-v2', theme); } catch { /* Mode still works for this visit. */ }
   }));
   window.addEventListener('storage', event => {
-    if (event.key === 'sebi-theme') apply(event.newValue === 'light' ? 'light' : 'dark');
+    if (event.key === 'sebi-theme-v2') apply(event.newValue === 'light' ? 'light' : 'dark');
   });
 })();
 
